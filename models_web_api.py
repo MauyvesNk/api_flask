@@ -59,7 +59,7 @@ def predictByClientId():
         # Gérer les exceptions ici
         print(f"Une erreur s'est produite : {str(e)}")
         return jsonify({
-            'Aucun modèle disponible à utiliser'
+           'message':'Aucun modèle disponible à utiliser'
         })
 
 if __name__ == "__main__":
