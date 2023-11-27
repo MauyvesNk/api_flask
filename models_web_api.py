@@ -1,17 +1,20 @@
-# Dependencies
+# Import des bibliothèques nécessaires
 from os import system
 from flask import Flask, request, jsonify, render_template
 import traceback
 import pandas as pd
 import numpy as np
 import pickle
+import json 
 
+# Création d'une instance de l'application Flask
 app = Flask(__name__)
 
 # Charger le modèle à l'aide d'un gestionnaire de contexte
 with open("model_LGBM.pkl", 'rb') as model_file:
     lgbm = pickle.load(model_file)
 
+# Route Flask ("GET") renvoie simplement le template initial
 @app.route('/')
 def home():
     """
@@ -25,6 +28,7 @@ def home():
     """
     return " Akwaba Mauyves NKONDO ! "
 
+# Route Flask ("POST") est utilisée pour gérer la soumission d'un formulaire
 @app.route('/predict', methods=['POST'])
 def predict():
     """
@@ -38,30 +42,43 @@ def predict():
         "list_client_id": [str(item) for item in num_client]
     })
 
-@app.route('/predictByClientId', methods=['POST'])
-def predictByClientId():
-    try:
-        json_ = request.get_json(force=True)
-        print(json_)
-        sample_size = 20000
-        data_set = pd.read_csv("df_final.csv", nrows=sample_size)
-        client = data_set[data_set['SK_ID_CURR'] == json_['SK_ID_CURR']].drop(['SK_ID_CURR', 'TARGET'], axis=1)
-        print(client)
-        X_transformed = client  # Vous pouvez ajuster cette partie en fonction de vos besoins
-        y_pred = lgbm.predict(X_transformed)
-        y_proba = lgbm.predict_proba(X_transformed)
-        # Retournez la réponse en JSON correctement
-        return jsonify({
-            'prediction': str(y_pred[0]),
-            'prediction_proba': str(y_proba[0][0])
-        })
-    except Exception as e:
-        # Gérer les exceptions ici
-        print(f"Une erreur s'est produite : {str(e)}")
-        return jsonify({
-           'message':'Aucun modèle disponible à utiliser'
-        })
 
+@app.route('/predictByClientId/<int:sk_id>', methods=['POST'])
+def predictByClientId(sk_id):
+    # Chargement de l'ensemble de données pour obtenir les caractéristiques du client spécifié
+    #try:
+       
+    data_set = pd.read_csv("X_train.csv")
+    client = data_set[data_set['sk_id_curr'] ==  sk_id].drop(['sk_id_curr'], axis=1)
+    print(client)
+    X_transformed = client  # Vous pouvez ajuster cette partie en fonction de vos besoins
+    y_pred = lgbm.predict(X_transformed)
+    y_proba = lgbm.predict_proba(X_transformed)
+    # Retournez la réponse en JSON correctement
+    return jsonify({
+        'prediction': str(y_pred[0]),
+        'prediction_proba': str(y_proba[0][0])
+    })
+
+@app.route('/predictNewClient', methods=['POST'])
+def predictNewClient(): 
+    data_client_dict = request.json
+    X = pd.DataFrame([data_client_dict])
+    y_pred = lgbm.predict(X)
+    y_proba = lgbm.predict_proba(X)
+    return jsonify({
+        'prediction': str(y_pred[0]),
+        'prediction_proba': str(y_proba[0][0])
+    })
+
+    #except Exception as e:
+        # Gérer les exceptions ici
+        #print(f"Une erreur s'est produite : {str(e)}")
+        #return jsonify({
+           # 'message':'Aucun modèle disponible à utiliser'
+      #  })
+    
+# Exécution de l'application
 if __name__ == "__main__":
     port = 5000
     app.run(port=port, debug=True, threaded=True)
