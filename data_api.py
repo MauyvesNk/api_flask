@@ -1,31 +1,31 @@
+# Importation des bibliothèques
+# pandas et numpy sont utilisés pour la manipulation des données.
 import pandas as pd
 import numpy as np
+# streamlit est la bibliothèque principale pour la création de l'application web.
+# components de Streamlit est utilisé pour incorporer des composants HTML personnalisés dans l'application.
 import streamlit as st
 import streamlit.components.v1 as components
 
 
-###---------- load data -------- 
+###------------------------- load data ---------------------------------------------------
 def load_all_data(sample_size):
-    
+    # Charger les données à partir de fichiers CSV
     data = pd.read_csv("Data/dataset_exported.csv",nrows=sample_size)
-
-    
     y_pred_test_export = pd.read_csv("Data/y_pred_test_export.csv")
+    train_set = pd.read_csv('Data/application_train.csv',nrows=sample_size)
 
-    #Preparation des données age
+    # Prétraitement des données sur l'âge
     data['DAYS_BIRTH']= data['DAYS_BIRTH']/-365
     bins= [0,10,20,30,40,50,60,70,80]
-    data['age_bins'] = (pd.cut(data['DAYS_BIRTH'], bins=bins)).astype(str)
-
-
-    train_set = pd.read_csv('Data/application_train.csv',nrows=sample_size)
-    
+    data['age_bins'] = (pd.cut(data['DAYS_BIRTH'], bins=bins)).astype(str)       
         
     return data ,y_pred_test_export,train_set
 
+
 #------------- Affichage des infos client en HTML------------------------------------------
 def display_client_info(id,revenu,age,nb_ann_travail):
-   
+   # Affichage des informations du client dans un composant HTML personnalisé
     components.html(
     """
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
