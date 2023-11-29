@@ -1,0 +1,5 @@
+flask
+pandas
+numpy
+lightgbm
+scikit-learn
