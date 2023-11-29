@@ -1,1 +1,1 @@
-web: gunicorn models_web_api:app --bind=0.0.0.0:5000
+web: gunicorn models_web_api:app
